@@ -43,7 +43,7 @@ library(ggpattern)
 library(ggpmisc)
 
 library(knitr)
-knitr::opts_chunk$set(comment="", cache=F, warning = F, message = F, fig.path = "figures/")
+knitr::opts_chunk$set(comment="", cache=F, warning = F, message = F, fig.path = "figures/", dev="svg")
 options(digits=4) # for kables
 
 load("data/maxfield_data.rda")
@@ -164,7 +164,7 @@ mnps.plantyr %>% select(corolla_length,	corolla_width,	style_length,	anther_max,
 
 # Figure 1
 
-```{r map, fig.height=4, fig.width=6.5}
+```{r Figure_1, fig.height=4, fig.width=6.5}
 size_meter <- 0.11
 subplot_offset <- size_meter * 1.5
 ggplot(treatments_map %>% mutate(snow=fct_relevel(snow, "Normal"))) + coord_fixed(clip="off")+
@@ -183,7 +183,7 @@ ggplot(treatments_map %>% mutate(snow=fct_relevel(snow, "Normal"))) + coord_fixe
 
 # Figure 2
 
-```{r hist_climate, fig.height=4, fig.width=6.5}
+```{r Figure_2, fig.height=4, fig.width=6.5}
 treatments %>% ggplot(aes(x=sun_date, shape=year, color=water, y=precip_est_mm))+geom_point(size=2)+
   geom_point(data=groundcover, aes(x=first_0_cm_day, color="Control", shape="1990-2017"), fill="white", size=2) +
   scale_color_manual(values=water_pal) + scale_shape_manual(values=c(21, 19, 17, 15))+ 
@@ -217,7 +217,7 @@ anova_table(mod.split.tests, mod.split) %>%
 
 ## Figure 3
 
-```{r multi_splitplot, fig.width=9, fig.height=10}
+```{r Figure_3, fig.width=9, fig.height=10}
 plot_split_plot <- function(emm, data, traits.plot, geom = "point", plot.emm = TRUE, facets="year") {
   
   data.long <- data %>% select(c(all_of(traits.plot), all_of(facets), water, snow)) %>% 
@@ -304,7 +304,7 @@ mod.abs.coefs %>% filter(effect=="fixed", term!="(Intercept)") %>% pivot_wider(i
 
 ## Figure 4
 
-```{r multi_meltdate, fig.width=6, fig.height=10}
+```{r Figure_4, fig.width=6, fig.height=10}
 plot_abs <- function(mod, data, traits.plot, tests=NULL, facets = "trait") {
   data.long <- data %>% select(all_of(traits.plot), water, snow, year, sun_date, precip_est_mm) %>% 
     pivot_longer(all_of(traits.plot), names_to="trait") %>% 
@@ -402,7 +402,7 @@ anova_table(mod.sm.tests, mod.sm) %>% kable()
 
 ## Figure 5
 
-```{r multi_sm, fig.width=6, fig.height=10}
+```{r Figure_5, fig.width=6, fig.height=10}
 plot_sm <- function(mod, data, traits.plot, tests=NULL) {
   data.long <- data %>% select(all_of(traits.plot), water, snow, year, sun_date, precip_est_mm, VWC) %>% 
     pivot_longer(all_of(traits.plot), names_to="trait") %>% 
@@ -447,7 +447,7 @@ Drawn manually from results of script "SEM_analysis.sas" executed in SAS 9.3.
 
 # Figure S1
 
-```{r timings}
+```{r Figure_S1}
   timings_labels <- c(snowcloth="Snow cloths applied to early plots", 
                      meltdates="Mean early and normal snowmelt timing", 
                      waterdates="Summer precipitation treatments applied",
@@ -479,7 +479,7 @@ plot_timings(filter(timings, !variable %in% c("sds","lt","pt","cen")))
 
 # Figure S2
 
-```{r groundcover, fig.height=5, fig.width=7.5}
+```{r Figure_S2, fig.height=5, fig.width=7.5}
 groundcover %>% mutate(first_snow_day=first_snow_day-365) %>% select(-first_snow_day) %>% 
   pivot_longer(ends_with("day"), names_to="threshold", values_to="day") %>% drop_na(day) %>% select(-starts_with("first")) %>% 
   mutate(threshold = fct_reorder(factor(threshold),day, na.rm=T, .desc=T)) %>% 
@@ -502,7 +502,7 @@ cat("Early snow treatments melted", -round(mean(early.melt_offset),1), "+-", rou
 
 # Figure S3
 
-```{r soil, fig.height=9, fig.width=9}
+```{r Figure_S3, fig.height=9, fig.width=9}
 max_VWC <- max(sm.subplot$VWC, na.rm=T)
 ggplot(sm.subplot, aes(x=yday(date))) + 
   facet_wrap(vars(year), ncol=1) +
@@ -521,7 +521,7 @@ ggplot(sm.subplot, aes(x=yday(date))) +
 
 # Figure S4
 
-```{r multresp_VWC, fig.height=7, fig.width=8}
+```{r Figure_S4, fig.height=7, fig.width=8}
 mt.morph.plantyr <- mt.plantyr[,c("corolla_length", "corolla_width","style_length","anther_max","anther_min","year","VWC")] %>% drop_na() 
 options(contrasts = c("contr.treatment", "contr.poly"))
 mt.rda <- rda(scale(select(mt.morph.plantyr, !c(year, VWC))) ~ VWC * year, data=mt.morph.plantyr)
@@ -556,7 +556,7 @@ Drawn manually from results of script "SEM_analysis.sas" executed in SAS 9.3.
 
 # Figure S6
 
-```{r precip_trend}
+```{r Figure_S6}
 summary_EPA_NOAA <- daily_filled_7am %>% filter(year(date)>1989, year(date)<2021, EPA_NOAA_filled > 2) %>% 
   mutate(drought_days = c(0,diff(date)), year=year(date)) %>% filter(ground_covered=="smmr") %>% 
   select(year, date, drought_days) %>% group_by(year) %>% summarize(max_drought_days_2mm = max(drought_days)) %>% 
